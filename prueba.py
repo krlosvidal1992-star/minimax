@@ -3,7 +3,7 @@ import time
 import random
 
 TAM = 7
-MAX_TURNOS = 25
+MAX_TURNOS = 15
 PROF = 2
 
 gato = [0, 0]
@@ -98,4 +98,5 @@ mostrar()
 if turnos < MAX_TURNOS:
     print("¡El gato atrapó al ratón!")
 else:
+
     print(f"¡El ratón escapó después de {MAX_TURNOS} turnos!")
