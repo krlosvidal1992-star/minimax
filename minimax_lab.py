@@ -2,20 +2,40 @@ import random
 import os
 import time
 
-tam = 7
-max_turnos = 10
-prof = 4
+# ==============================
+# CONFIGURACIÓN DEL JUEGO
+# ==============================
 
+tam = 5              # Tamaño del tablero (5x5)
+max_turnos = 15      # Cantidad máxima de turnos
+prof = 3             # Profundidad del algoritmo minimax
+
+# Posiciones iniciales
 gato = [0, 0]
-raton = [2, 2]  
+raton = [3, 3]
 
-def limpiar(): 
-    if os.name == "nt":          # Si el sistema operativo es Windows
-       os.system("cls")         # Limpia la pantalla con 'cls'
-    else:                        # Si NO es Windows (Linux, Mac)
-       os.system("clear")       # Limpia la pantalla con 'clear'
 
-def mostrar_tablero():   #IMPRIME EL TABLERO
+# ==============================
+# FUNCIONES AUXILIARES
+# ==============================
+
+def limpiar():
+    """
+    Limpia la consola dependiendo del sistema operativo.
+    """
+    if os.name == "nt":  # Windows
+        os.system("cls")
+    else:                # Linux / Mac
+        os.system("clear")
+
+
+def mostrar_tablero():
+    """
+    Imprime el tablero en consola mostrando:
+    G = Gato
+    R = Ratón
+    . = Espacio vacío
+    """
     for f in range(tam):
         for c in range(tam):
             if [f, c] == gato:
@@ -27,122 +47,168 @@ def mostrar_tablero():   #IMPRIME EL TABLERO
         print()
     print()
 
-def movimientos(posicion):   # DEVUELVE LOS MOVIMIENTOS VÁLIDOS
 
-    # Extraigo fila (f) y columna (c) de la posición actual
-    f = posicion[0]
-    c = posicion[1]
+# ==============================
+# LÓGICA DEL JUEGO
+# ==============================
 
-    # Lista de movimientos posibles: arriba, abajo, izquierda, derecha
-    movimiento = [
-        [f - 1, c],   # arriba
-        [f + 1, c],   # abajo
-        [f, c - 1],   # izquierda
-        [f, c + 1]    # derecha
+def movimientos(posicion):
+    """
+    Devuelve una lista con los movimientos válidos
+    (arriba, abajo, izquierda, derecha)
+    sin salirse del tablero.
+    """
+
+    f, c = posicion  # Extraemos fila y columna
+
+    posibles = [
+        [f - 1, c],  # Arriba
+        [f + 1, c],  # Abajo
+        [f, c - 1],  # Izquierda
+        [f, c + 1]   # Derecha
     ]
 
-    movimientos_validos = [] # Donde guardaré solo los movimientos que sí son válidos
+    validos = []
 
-    for m in movimiento:   # Recorro cada movimiento posible
-        fila = m[0]
-        columna = m[1]
+    for fila, columna in posibles:
+        # Verificamos que esté dentro del tablero
+        if 0 <= fila < tam and 0 <= columna < tam:
+            validos.append([fila, columna])
 
-        # Verifico que la fila esté dentro del tablero
-        fila_valida = (fila >= 0 and fila < tam)
-
-        # Verifico que la columna esté dentro del tablero
-        columna_valida = (columna >= 0 and columna < tam)
-
-        # Si fila y columna están dentro del tablero, lo guardo
-        if fila_valida and columna_valida:
-            movimientos_validos.append(m)
-
-    return movimientos_validos
+    return validos
 
 
-def evaluar(g, r):   # DEVUELVE LA EVALUACIÓN DE LA POSICIÓN
-
-    gato_fila = g[0]
-    gato_columna = g[1]
-
-    raton_fila = r[0]
-    raton_columna = r[1]
-
-    diferencia_filas = abs(gato_fila - raton_fila)
-    diferencia_columnas = abs(gato_columna - raton_columna)
-
-    distancia = diferencia_filas + diferencia_columnas
-
-    evaluacion = -distancia
-
-    return evaluacion
-
-
-
-def minimax(g, r, prof, es_gato): # ALGORITMO MINIMAX
-    if g == r:
-        return 999 if es_gato else -999
-    if prof == 0:
-        return evaluar(g, r)
+def evaluar(g, r):
+    """
+    Función heurística:
+    Calcula la distancia Manhattan entre gato y ratón.
     
-    if es_gato: # GATO MAXIMIZA
+    Mientras más cerca esté el gato,
+    mejor será el puntaje.
+    """
+
+    distancia = abs(g[0] - r[0]) + abs(g[1] - r[1])
+
+    return -distancia  # Negativo porque queremos minimizar distancia
+
+
+def minimax(g, r, profundidad, es_gato):
+    """
+    Algoritmo Minimax:
+
+    - El gato intenta MAXIMIZAR el puntaje.
+    - El ratón intenta MINIMIZAR el puntaje.
+    """
+
+    # Caso base: el gato atrapó al ratón
+    if g == r:
+        return 999  # Muy bueno para el gato
+
+    # Caso base: llegamos al límite de profundidad
+    if profundidad == 0:
+        return evaluar(g, r)
+
+    # Turno del gato (MAXIMIZA)
+    if es_gato:
         mejor = -9999
-        for movimiento in movimientos(g):
-            mejor = max(mejor, minimax(movimiento, r, prof-1, False))
+        for mov in movimientos(g):
+            valor = minimax(mov, r, profundidad - 1, False)
+            mejor = max(mejor, valor)
         return mejor
+
+    # Turno del ratón (MINIMIZA)
     else:
         peor = 9999
-        for movimiento in movimientos(r):
-            peor = min(peor, minimax(g, movimiento, prof-1, True))
+        for mov in movimientos(r):
+            valor = minimax(g, mov, profundidad - 1, True)
+            peor = min(peor, valor)
         return peor
 
-def mejor_movimiento_gato(): #DEVUELVE EL MEJOR MOVIMIENTO PARA EL GATO|
+
+def mejor_movimiento_gato():
+    """
+    Evalúa todos los movimientos posibles del gato
+    y devuelve el que tenga mejor puntuación.
+    """
+
     mejor_valor = -9999
-    mejor_movimiento = gato.copy()
-    for movimiento in movimientos(gato):
-        valor = minimax(movimiento, raton, prof, False)
+    mejor_mov = gato.copy()
+
+    for mov in movimientos(gato):
+        valor = minimax(mov, raton, prof, False)
+
         if valor > mejor_valor:
             mejor_valor = valor
-            mejor_movimiento = movimiento
-    return mejor_movimiento
+            mejor_mov = mov
 
-def mejor_movimiento_raton(): #DEVUELVE EL MEJOR MOVIMIENTO PARA EL RATON
+    return mejor_mov
+
+
+def mejor_movimiento_raton():
+    """
+    Evalúa todos los movimientos posibles del ratón
+    y devuelve el que tenga menor puntuación
+    (porque el ratón quiere alejarse).
+    """
+
     peor_valor = 9999
-    mejor_movimiento = raton.copy()
-    for movimiento in movimientos(raton):
-        valor = minimax(gato, movimiento, prof, True)
+    mejor_mov = raton.copy()
+
+    for mov in movimientos(raton):
+        valor = minimax(gato, mov, prof, True)
+
         if valor < peor_valor:
             peor_valor = valor
-            mejor_movimiento = movimiento
-    return mejor_movimiento
+            mejor_mov = mov
+
+    return mejor_mov
+
+
+# ==============================
+# BUCLE PRINCIPAL DEL JUEGO
+# ==============================
 
 turnos = 0
 
+while turnos < max_turnos:
 
-while turnos < max_turnos: #Bucle principal del juego
     limpiar()
     mostrar_tablero()
-    print(f"Turno {turnos+1}/{max_turnos}")
-    
+    print(f"Turno {turnos + 1}/{max_turnos}")
+
+    # Verificamos si el gato atrapó al ratón
     if gato == raton:
         print("¡El gato atrapó al ratón!")
         break
 
-    # Ratón: 2 turnos random, luego inteligente
+    # --- TURNO DEL RATÓN ---
+    # Los primeros 2 turnos se mueve al azar
     if turnos < 2:
-        raton = random.choice(movimientos(raton)) if movimientos(raton) else raton.copy()
+        movs = movimientos(raton)
+
+        if movs:
+            raton = random.choice(movs)
+        else:
+            raton = raton.copy()
     else:
         raton = mejor_movimiento_raton()
-    
-    # Gato siempre inteligente
+
+    # --- TURNO DEL GATO ---
     gato = mejor_movimiento_gato()
-    
+
     turnos += 1
     time.sleep(0.3)
 
-limpiar() 
+
+# ==============================
+# RESULTADO FINAL
+# ==============================
+
+limpiar()
 mostrar_tablero()
-if turnos < max_turnos:
+
+if gato == raton:
     print("¡El gato atrapó al ratón!")
 else:
     print(f"¡El ratón escapó después de {max_turnos} turnos!")
+
