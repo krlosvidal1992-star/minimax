@@ -48,9 +48,8 @@ def mostrar_tablero():
     print()
 
 
-# ==============================
 # LÓGICA DEL JUEGO
-# ==============================
+
 
 def movimientos(posicion):
     """
@@ -164,9 +163,7 @@ def mejor_movimiento_raton():
     return mejor_mov
 
 
-# ==============================
 # BUCLE PRINCIPAL DEL JUEGO
-# ==============================
 
 turnos = 0
 
@@ -199,10 +196,7 @@ while turnos < max_turnos:
     turnos += 1
     time.sleep(0.3)
 
-
-# ==============================
 # RESULTADO FINAL
-# ==============================
 
 limpiar()
 mostrar_tablero()
