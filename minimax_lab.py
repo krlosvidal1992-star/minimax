@@ -2,22 +2,21 @@ import random
 import os
 import time
 
-# ==============================
-# CONFIGURACIÓN DEL JUEGO
-# ==============================
 
-tam = 5              # Tamaño del tablero (5x5)
-max_turnos = 15      # Cantidad máxima de turnos
-prof = 3             # Profundidad del algoritmo minimax
+# CONFIGURACIÓN DEL JUEGO
+
+
+TAM = 5              # Tamaño del tablero (5x5)
+MAX_TURNOS = 15      # Cantidadbnnbn b     máxima de turnos
+PROF = 3             # Profundidad del algoritmo minimax
 
 # Posiciones iniciales
 gato = [0, 0]
 raton = [3, 3]
 
 
-# ==============================
 # FUNCIONES AUXILIARES
-# ==============================
+
 
 def limpiar():
     """
@@ -36,8 +35,8 @@ def mostrar_tablero():
     R = Ratón
     . = Espacio vacío
     """
-    for f in range(tam):
-        for c in range(tam):
+    for f in range(TAM):
+        for c in range(TAM):
             if [f, c] == gato:
                 print("G", end=" ")
             elif [f, c] == raton:
@@ -49,7 +48,6 @@ def mostrar_tablero():
 
 
 # LÓGICA DEL JUEGO
-
 
 def movimientos(posicion):
     """
@@ -71,7 +69,7 @@ def movimientos(posicion):
 
     for fila, columna in posibles:
         # Verificamos que esté dentro del tablero
-        if 0 <= fila < tam and 0 <= columna < tam:
+        if 0 <= fila < TAM and 0 <= columna < TAM:
             validos.append([fila, columna])
 
     return validos
@@ -134,7 +132,7 @@ def mejor_movimiento_gato():
     mejor_mov = gato.copy()
 
     for mov in movimientos(gato):
-        valor = minimax(mov, raton, prof, False)
+        valor = minimax(mov, raton, PROF, False)     
 
         if valor > mejor_valor:
             mejor_valor = valor
@@ -154,7 +152,7 @@ def mejor_movimiento_raton():
     mejor_mov = raton.copy()
 
     for mov in movimientos(raton):
-        valor = minimax(gato, mov, prof, True)
+        valor = minimax(gato, mov, PROF, True)
 
         if valor < peor_valor:
             peor_valor = valor
@@ -163,15 +161,17 @@ def mejor_movimiento_raton():
     return mejor_mov
 
 
+
 # BUCLE PRINCIPAL DEL JUEGO
+
 
 turnos = 0
 
-while turnos < max_turnos:
+while turnos < MAX_TURNOS:
 
     limpiar()
     mostrar_tablero()
-    print(f"Turno {turnos + 1}/{max_turnos}")
+    print(f"Turno {turnos + 1}/{MAX_TURNOS}")
 
     # Verificamos si el gato atrapó al ratón
     if gato == raton:
@@ -196,7 +196,10 @@ while turnos < max_turnos:
     turnos += 1
     time.sleep(0.3)
 
+
+
 # RESULTADO FINAL
+
 
 limpiar()
 mostrar_tablero()
@@ -204,5 +207,5 @@ mostrar_tablero()
 if gato == raton:
     print("¡El gato atrapó al ratón!")
 else:
-    print(f"¡El ratón escapó después de {max_turnos} turnos!")
+    print(f"¡El ratón escapó después de {MAX_TURNOS} turnos!")
 
