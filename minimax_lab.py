@@ -175,7 +175,6 @@ while turnos < MAX_TURNOS:
 
     # Verificamos si el gato atrapó al ratón
     if gato == raton:
-        print("¡El gato atrapó al ratón!")
         break
 
     # --- TURNO DEL RATÓN ---
